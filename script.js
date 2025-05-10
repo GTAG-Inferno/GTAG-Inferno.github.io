@@ -1,108 +1,180 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const canvas = document.getElementById('characterCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    // Character data
-    let character = {
-        name: '',
-        color: { r: 5, g: 5, b: 5 },
-        cosmetics: {}
-    };
-    
-    // Cosmetic categories
-    const cosmeticCategories = [
-        { id: 'hats', name: 'Hats', max: 1 },
-        { id: 'shirts', name: 'Shirts', max: 1 },
-        { id: 'pants', name: 'Pants', max: 1 },
-        { id: 'shoes', name: 'Shoes', max: 1 },
-        { id: 'accessories', name: 'Accessories', max: 2 }
-    ];
-    
-    // Example cosmetic items (replace with your images)
-    const cosmeticItems = {
-        hats: [
-            { id: 'hat1', name: 'Cap', image: 'assets/images/hat1.png' },
-            { id: 'hat2', name: 'Helmet', image: 'assets/images/hat2.png' }
-        ],
-        shirts: [
-            { id: 'shirt1', name: 'T-Shirt', image: 'assets/images/shirt1.png' },
-            { id: 'shirt2', name: 'Jacket', image: 'assets/images/shirt2.png' }
-        ],
-        // Add more categories...
-    };
-    
-    // Initialize UI
-    function initUI() {
-        // Name input
-        document.getElementById('characterName').addEventListener('input', function(e) {
-            character.name = e.target.value;
-            renderCharacter();
-        });
-        
-        // Color inputs
-        ['r', 'g', 'b'].forEach(component => {
-            document.getElementById(`color${component.toUpperCase()}`).addEventListener('input', function(e) {
-                character.color[component] = parseInt(e.target.value) || 0;
-                renderCharacter();
-            });
-        });
-        
-        // Create cosmetic buttons
-        const container = document.getElementById('cosmetics-container');
-        cosmeticCategories.forEach(category => {
-            const categoryDiv = document.createElement('div');
-            categoryDiv.className = 'cosmetic-category';
-            
-            const title = document.createElement('h3');
-            title.textContent = `${category.name} (Max: ${category.max})`;
-            categoryDiv.appendChild(title);
-            
-            const chooseButton = document.createElement('button');
-            chooseButton.textContent = `Choose ${category.name}`;
-            chooseButton.addEventListener('click', () => openCosmeticModal(category.id));
-            categoryDiv.appendChild(chooseButton);
-            
-            container.appendChild(categoryDiv);
-        });
-        
-        // Save button
-        document.getElementById('saveCharacter').addEventListener('click', saveCharacter);
-    }
-    
-    // Render character
-    function renderCharacter() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Calculate color
-        const r = Math.round((255 / 9) * character.color.r);
-        const g = Math.round((255 / 9) * character.color.g);
-        const b = Math.round((255 / 9) * character.color.b);
-        
-        // Draw character (simplified for this guide)
-        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-        ctx.fillRect(50, 50, 200, 300); // Example shape
-        
-        // Draw name
-        if (character.name) {
-            ctx.fillStyle = 'black';
-            ctx.font = '16px Arial';
-            ctx.fillText(character.name, 150, 30);
-        }
-    }
-    
-    // Open cosmetic selection
-    function openCosmeticModal(category) {
-        const modal = document.getElementById('cosmeticModal');
-        modal.style.display = 'block';
-    }
-    
-    // Save character
-    function saveCharacter() {
-        alert('Character saved! (Check console for details)');
-        console.log('Character data:', character);
-    }
-    
-    // Initialize everything
-    initUI();
-    renderCharacter();
-});
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.character-preview {
+    flex: 1;
+    min-width: 300px;
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#characterCanvas {
+    display: block;
+    margin: 0 auto;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+}
+
+.controls {
+    flex: 2;
+    min-width: 300px;
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.control-section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.color-control {
+    display: flex;
+    gap: 15px;
+}
+
+.cosmetic-category {
+    margin-bottom: 15px;
+}
+
+.selected-cosmetics {
+    margin: 10px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.choose-cosmetic {
+    background-color: #2196F3;
+    margin-top: 5px;
+}
+
+.choose-cosmetic:hover {
+    background-color: #0b7dda;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 900px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.close-modal {
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-modal:hover {
+    color: #f44336;
+}
+
+/* Cosmetic Grid */
+#cosmeticGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+}
+
+.cosmetic-grid-item {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cosmetic-grid-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.cosmetic-grid-item.selected {
+    border-color: #4CAF50;
+    background-color: #f0fff0;
+}
+
+.cosmetic-grid-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 8px;
+}
+
+.cosmetic-grid-item .cosmetic-name {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.cosmetic-grid-item .cosmetic-type {
+    font-size: 12px;
+    color: #666;
+    background-color: #f0f0f0;
+    padding: 2px 5px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+/* Category filter */
+#cosmeticCategoryFilter {
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
