@@ -6,7 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let character = {
         name: '',
         color: { r: 5, g: 5, b: 5 },
-        cosmetics: {}
+        cosmetics: {},
+        variations: {} // Stores selected variations for each cosmetic
     };
     
     // Layer order (from bottom to top)
@@ -30,8 +31,8 @@ document.addEventListener('DOMContentLoaded', function() {
         { id: 'hats', name: 'Hats', max: 1 },
         { id: 'shirts', name: 'Shirts', max: 1 },
         { id: 'badges', name: 'Badges', max: 2 },
-        { id: 'arms', name: 'Arms', max: 1 },
-        { id: 'paws', name: 'Paws', max: 1 },
+        { id: 'arms', name: 'Arms', max: 1, hasVariations: true },
+        { id: 'paws', name: 'Paws', max: 1, hasVariations: true },
         { id: 'faces', name: 'Faces', max: 1 },
         { id: 'pants', name: 'Pants', max: 1 },
         { id: 'chests', name: 'Chests', max: 1 },
@@ -39,56 +40,84 @@ document.addEventListener('DOMContentLoaded', function() {
         { id: 'furs', name: 'Furs', max: 1 }
     ];
     
-    // Example cosmetic items (replace with your actual assets)
+    // Example cosmetic items with variations
     const assets = {
         base: 'assets/images/character_base.png',
         mask: 'assets/images/character_mask.png',
         hats: {
-            hat1: 'assets/images/hats/hat1.png',
-            hat2: 'assets/images/hats/hat2.png'
-        },
-        shirts: {
-            shirt1: 'assets/images/shirts/shirt1.png',
-            shirt2: 'assets/images/shirts/shirt2.png'
-        },
-        badges: {
-            badge1: 'assets/images/badges/badge1.png',
-            badge2: 'assets/images/badges/badge2.png'
+            hat1: {
+                name: "Wizard Hat",
+                preview: 'assets/images/hats/hat1_preview.png',
+                render: 'assets/images/hats/hat1_render.png'
+            },
+            hat2: {
+                name: "Baseball Cap",
+                preview: 'assets/images/hats/hat2_preview.png',
+                render: 'assets/images/hats/hat2_render.png'
+            }
         },
         arms: {
-            arm1: 'assets/images/arms/arm1.png',
-            arm2: 'assets/images/arms/arm2.png'
+            arm1: {
+                name: "Robotic Arm",
+                preview: 'assets/images/arms/arm1_preview.png',
+                variations: {
+                    left: {
+                        name: "Left Arm",
+                        render: 'assets/images/arms/arm1_left.png'
+                    },
+                    right: {
+                        name: "Right Arm",
+                        render: 'assets/images/arms/arm1_right.png'
+                    },
+                    both: {
+                        name: "Both Arms",
+                        render: ['assets/images/arms/arm1_left.png', 'assets/images/arms/arm1_right.png']
+                    }
+                }
+            },
+            arm2: {
+                name: "Tattoo Sleeve",
+                preview: 'assets/images/arms/arm2_preview.png',
+                variations: {
+                    left: {
+                        name: "Left Sleeve",
+                        render: 'assets/images/arms/arm2_left.png'
+                    },
+                    right: {
+                        name: "Right Sleeve",
+                        render: 'assets/images/arms/arm2_right.png'
+                    }
+                }
+            }
         },
+        // Add other categories similarly...
         paws: {
-            paw1: 'assets/images/paws/paw1.png',
-            paw2: 'assets/images/paws/paw2.png'
-        },
-        faces: {
-            face1: 'assets/images/faces/face1.png',
-            face2: 'assets/images/faces/face2.png'
-        },
-        pants: {
-            pants1: 'assets/images/pants/pants1.png',
-            pants2: 'assets/images/pants/pants2.png'
-        },
-        chests: {
-            chest1: 'assets/images/chests/chest1.png',
-            chest2: 'assets/images/chests/chest2.png'
-        },
-        backs: {
-            back1: 'assets/images/backs/back1.png',
-            back2: 'assets/images/backs/back2.png'
-        },
-        furs: {
-            fur1: 'assets/images/furs/fur1.png',
-            fur2: 'assets/images/furs/fur2.png'
+            paw1: {
+                name: "Cyber Claws",
+                preview: 'assets/images/paws/paw1_preview.png',
+                variations: {
+                    left: {
+                        name: "Left Paw",
+                        render: 'assets/images/paws/paw1_left.png'
+                    },
+                    right: {
+                        name: "Right Paw",
+                        render: 'assets/images/paws/paw1_right.png'
+                    },
+                    both: {
+                        name: "Both Paws",
+                        render: ['assets/images/paws/paw1_left.png', 'assets/images/paws/paw1_right.png']
+                    }
+                }
+            }
         }
     };
-    
+
     // Loaded images cache
     const loadedImages = {};
     let currentCosmeticCategory = '';
-    
+    let currentCosmeticItem = null;
+
     // Initialize UI
     function initUI() {
         // Name input
@@ -132,8 +161,9 @@ document.addEventListener('DOMContentLoaded', function() {
             container.appendChild(categoryDiv);
         });
         
-        // Initialize modal
-        initModal();
+        // Initialize modals
+        initModal('cosmeticModal');
+        initModal('variationModal');
         
         // Save button
         document.getElementById('saveCharacter').addEventListener('click', saveCharacter);
@@ -145,10 +175,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    function initModal() {
-        const modal = document.getElementById('cosmeticModal');
-        const closeBtn = document.querySelector('.close-modal');
-        const categoryFilter = document.getElementById('cosmeticCategoryFilter');
+    function initModal(modalId) {
+        const modal = document.getElementById(modalId);
+        const closeBtn = modal.querySelector('.close-modal');
         
         // Close modal when clicking X
         closeBtn.addEventListener('click', () => {
@@ -160,11 +189,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target === modal) {
                 modal.style.display = 'none';
             }
-        });
-        
-        // Filter cosmetics by category
-        categoryFilter.addEventListener('change', () => {
-            populateCosmeticGrid(currentCosmeticCategory, categoryFilter.value);
         });
     }
     
@@ -183,6 +207,74 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.style.display = 'block';
     }
     
+    function openVariationModal(item) {
+        currentCosmeticItem = item;
+        const modal = document.getElementById('variationModal');
+        const grid = document.getElementById('variationGrid');
+        const title = document.getElementById('variationModalTitle');
+        
+        title.textContent = `Select ${item.name} Variation`;
+        grid.innerHTML = '';
+        
+        // Add variation options
+        for (const [key, variation] of Object.entries(item.variations)) {
+            const option = document.createElement('div');
+            option.className = 'variation-option';
+            option.dataset.variationKey = key;
+            
+            // Check if this variation is selected
+            if (character.variations[item.id] === key) {
+                option.classList.add('selected');
+            }
+            
+            // Create image
+            const img = document.createElement('img');
+            img.src = Array.isArray(variation.render) ? 
+                variation.render[0] : // Use first image for preview if multiple
+                variation.render;
+            img.alt = variation.name;
+            option.appendChild(img);
+            
+            // Create name label
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'variation-name';
+            nameDiv.textContent = variation.name;
+            option.appendChild(nameDiv);
+            
+            // Add click handler
+            option.addEventListener('click', () => {
+                // Store selected variation
+                character.variations[item.id] = key;
+                
+                // Add to cosmetics if not already there
+                if (!character.cosmetics[currentCosmeticCategory]?.includes(item.id)) {
+                    if (!character.cosmetics[currentCosmeticCategory]) {
+                        character.cosmetics[currentCosmeticCategory] = [];
+                    }
+                    character.cosmetics[currentCosmeticCategory].push(item.id);
+                }
+                
+                // Update UI
+                document.querySelectorAll('.variation-option').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                option.classList.add('selected');
+                
+                renderCharacter();
+                updateSelectedCosmeticsDisplay();
+                
+                // Close variation modal and return to cosmetic modal
+                modal.style.display = 'none';
+                document.getElementById('cosmeticModal').style.display = 'block';
+            });
+            
+            grid.appendChild(option);
+        }
+        
+        // Show modal
+        modal.style.display = 'block';
+    }
+    
     function populateCosmeticGrid(category, filter = 'all') {
         const grid = document.getElementById('cosmeticGrid');
         grid.innerHTML = '';
@@ -196,9 +288,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 itemsToShow = itemsToShow.concat(
                     Object.keys(assets[cat.id]).map(id => ({
                         id: id,
-                        name: id, // Replace with proper names if available
+                        ...assets[cat.id][id],
                         type: cat.name,
-                        image: assets[cat.id][id]
+                        category: cat.id
                     }))
                 );
             });
@@ -206,9 +298,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show only cosmetics from selected category
             itemsToShow = Object.keys(assets[filter]).map(id => ({
                 id: id,
-                name: id, // Replace with proper names if available
+                ...assets[filter][id],
                 type: cosmeticCategories.find(c => c.id === filter).name,
-                image: assets[filter][id]
+                category: filter
             }));
         }
         
@@ -217,22 +309,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'cosmetic-grid-item';
             itemDiv.dataset.itemId = item.id;
-            itemDiv.dataset.category = filter === 'all' ? 
-                cosmeticCategories.find(c => assets[c.id][item.id]).id : 
-                filter;
+            itemDiv.dataset.category = item.category;
             
             // Check if this item is selected
-            const categoryId = filter === 'all' ? 
-                cosmeticCategories.find(c => assets[c.id][item.id]).id : 
-                filter;
-            
-            if (character.cosmetics[categoryId] && character.cosmetics[categoryId].includes(item.id)) {
+            if (character.cosmetics[item.category]?.includes(item.id)) {
                 itemDiv.classList.add('selected');
             }
             
-            // Create image (using placeholder if image not loaded)
+            // Create image (using preview image)
             const img = document.createElement('img');
-            img.src = loadedImages[item.image] ? item.image : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><text x="50" y="50" font-family="Arial" font-size="10" text-anchor="middle" fill="%23999">' + item.name + '</text></svg>';
+            img.src = loadedImages[item.preview] ? item.preview : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><text x="50" y="50" font-family="Arial" font-size="10" text-anchor="middle" fill="%23999">' + item.name + '</text></svg>';
             img.alt = item.name;
             itemDiv.appendChild(img);
             
@@ -252,28 +338,33 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Add click handler
             itemDiv.addEventListener('click', () => {
-                toggleCosmeticSelection(
-                    filter === 'all' ? 
-                        cosmeticCategories.find(c => assets[c.id][item.id]).id : 
-                        filter,
-                    item.id
-                );
+                const categoryData = cosmeticCategories.find(c => c.id === item.category);
                 
-                // Update selection UI
-                document.querySelectorAll('.cosmetic-grid-item').forEach(el => {
-                    el.classList.remove('selected');
-                });
-                
-                // Re-apply selected class to all selected items
-                for (const cat in character.cosmetics) {
-                    character.cosmetics[cat].forEach(id => {
-                        const selectedEl = document.querySelector(`.cosmetic-grid-item[data-item-id="${id}"]`);
-                        if (selectedEl) selectedEl.classList.add('selected');
+                // For items with variations, open variation modal
+                if (categoryData.hasVariations) {
+                    openVariationModal(item);
+                    document.getElementById('cosmeticModal').style.display = 'none';
+                } 
+                // For regular items, toggle selection directly
+                else {
+                    toggleCosmeticSelection(item.category, item.id);
+                    
+                    // Update selection UI
+                    document.querySelectorAll('.cosmetic-grid-item').forEach(el => {
+                        el.classList.remove('selected');
                     });
+                    
+                    // Re-apply selected class to all selected items
+                    for (const cat in character.cosmetics) {
+                        character.cosmetics[cat].forEach(id => {
+                            const selectedEl = document.querySelector(`.cosmetic-grid-item[data-item-id="${id}"]`);
+                            if (selectedEl) selectedEl.classList.add('selected');
+                        });
+                    }
+                    
+                    // Update selected items display
+                    updateSelectedCosmeticsDisplay();
                 }
-                
-                // Update selected items display
-                updateSelectedCosmeticsDisplay();
             });
             
             grid.appendChild(itemDiv);
@@ -300,6 +391,10 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             // Remove the item
             character.cosmetics[category].splice(currentIndex, 1);
+            // Also remove any variations for this item
+            if (character.variations[itemId]) {
+                delete character.variations[itemId];
+            }
         }
         
         renderCharacter();
@@ -316,8 +411,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 container.appendChild(selectedText);
                 
                 character.cosmetics[category.id].forEach(itemId => {
+                    const item = assets[category.id][itemId];
                     const itemSpan = document.createElement('span');
-                    itemSpan.textContent = itemId;
+                    
+                    // For items with variations, show which variation is selected
+                    if (character.variations[itemId]) {
+                        const variation = item.variations[character.variations[itemId]];
+                        itemSpan.textContent = `${item.name} (${variation.name})`;
+                    } else {
+                        itemSpan.textContent = item.name;
+                    }
+                    
                     itemSpan.style.marginRight = '8px';
                     container.appendChild(itemSpan);
                 });
@@ -331,6 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function preloadImages() {
         const loadImage = (src) => {
             return new Promise((resolve) => {
+                if (!src) return resolve();
                 const img = new Image();
                 img.onload = () => {
                     loadedImages[src] = img;
@@ -349,8 +454,26 @@ document.addEventListener('DOMContentLoaded', function() {
         const promises = [];
         for (const category in assets) {
             if (category !== 'base' && category !== 'mask') {
-                for (const item in assets[category]) {
-                    promises.push(loadImage(assets[category][item]));
+                for (const itemId in assets[category]) {
+                    const item = assets[category][itemId];
+                    // Load preview image
+                    promises.push(loadImage(item.preview));
+                    
+                    // Load render images
+                    if (item.render) {
+                        promises.push(loadImage(item.render));
+                    }
+                    
+                    // Load variation images
+                    if (item.variations) {
+                        for (const variation of Object.values(item.variations)) {
+                            if (Array.isArray(variation.render)) {
+                                variation.render.forEach(img => promises.push(loadImage(img)));
+                            } else {
+                                promises.push(loadImage(variation.render));
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -399,16 +522,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     ctx.globalCompositeOperation = 'source-over';
                 }
             }
-            else {
+            else if (character.cosmetics[layer]) {
                 // Draw cosmetics for this layer
-                if (character.cosmetics[layer]) {
-                    character.cosmetics[layer].forEach(cosmeticId => {
-                        const imgPath = assets[layer][cosmeticId];
-                        if (loadedImages[imgPath]) {
-                            ctx.drawImage(loadedImages[imgPath], 0, 0);
+                character.cosmetics[layer].forEach(itemId => {
+                    const item = assets[layer][itemId];
+                    
+                    // Handle items with variations
+                    if (item.variations && character.variations[itemId]) {
+                        const variation = item.variations[character.variations[itemId]];
+                        
+                        if (Array.isArray(variation.render)) {
+                            // Draw multiple images for this variation
+                            variation.render.forEach(img => {
+                                if (loadedImages[img]) {
+                                    ctx.drawImage(loadedImages[img], 0, 0);
+                                }
+                            });
+                        } else if (loadedImages[variation.render]) {
+                            // Draw single variation image
+                            ctx.drawImage(loadedImages[variation.render], 0, 0);
                         }
-                    });
-                }
+                    } 
+                    // Handle regular items
+                    else if (item.render && loadedImages[item.render]) {
+                        ctx.drawImage(loadedImages[item.render], 0, 0);
+                    }
+                });
             }
         });
         
