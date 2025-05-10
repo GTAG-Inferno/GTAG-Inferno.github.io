@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Character Maker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Character Maker</h1>
+        
+        <div class="character-preview">
+            <canvas id="characterCanvas" width="300" height="400"></canvas>
+        </div>
+        
+        <div class="controls">
+            <div class="control-section">
+                <h2>Character Name</h2>
+                <input type="text" id="characterName" placeholder="Enter character name">
+            </div>
+            
+            <div class="control-section">
+                <h2>Base Color</h2>
+                <div class="color-control">
+                    <label>R: <input type="number" id="colorR" min="0" max="9" value="5"></label>
+                    <label>G: <input type="number" id="colorG" min="0" max="9" value="5"></label>
+                    <label>B: <input type="number" id="colorB" min="0" max="9" value="5"></label>
+                </div>
+            </div>
+            
+            <div class="control-section" id="cosmetics-container">
+                <!-- Cosmetic buttons will appear here -->
+            </div>
+            
+            <button id="saveCharacter">Save Character</button>
+        </div>
+    </div>
+
+    <!-- Cosmetic Selection Popup -->
+    <div id="cosmeticModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Cosmetic Catalog</h2>
+                <select id="cosmeticCategoryFilter">
+                    <option value="all">All Categories</option>
+                    <option value="hats">Hats</option>
+                    <option value="shirts">Shirts</option>
+                    <option value="pants">Pants</option>
+                    <option value="shoes">Shoes</option>
+                    <option value="accessories">Accessories</option>
+                </select>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body" id="cosmeticGrid">
+                <!-- Cosmetic items will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
