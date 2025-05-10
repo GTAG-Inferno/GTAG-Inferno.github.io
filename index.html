@@ -4,106 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Character Creator</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
-        <header class="app-header">
-            <h1><span class="highlight">Character</span> Creator</h1>
-            <div class="character-name-container">
-                <input type="text" id="characterName" placeholder="Your character's name">
-                <button id="saveCharacter" class="save-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/>
-                    </svg>
-                    Save
-                </button>
+    <div class="avatar-creator">
+        <!-- Left Panel - Avatar Preview -->
+        <div class="avatar-preview">
+            <div class="canvas-container">
+                <canvas id="characterCanvas" width="400" height="600"></canvas>
             </div>
-        </header>
-
-        <main class="creator-container">
-            <section class="character-display">
-                <div class="canvas-container">
-                    <canvas id="characterCanvas" width="350" height="450"></canvas>
-                </div>
-                <div class="color-controls">
-                    <h3>Base Color</h3>
-                    <div class="color-sliders">
-                        <div class="slider-group">
-                            <label>Red</label>
-                            <input type="range" id="colorR" min="0" max="9" value="5">
-                            <span id="rValue">5</span>
-                        </div>
-                        <div class="slider-group">
-                            <label>Green</label>
-                            <input type="range" id="colorG" min="0" max="9" value="5">
-                            <span id="gValue">5</span>
-                        </div>
-                        <div class="slider-group">
-                            <label>Blue</label>
-                            <input type="range" id="colorB" min="0" max="9" value="5">
-                            <span id="bValue">5</span>
-                        </div>
+            <div class="color-picker">
+                <h3>Body Color</h3>
+                <div class="color-sliders">
+                    <div class="slider">
+                        <label>R</label>
+                        <input type="range" id="colorR" min="0" max="9" value="5">
+                        <span id="rValue">5</span>
+                    </div>
+                    <div class="slider">
+                        <label>G</label>
+                        <input type="range" id="colorG" min="0" max="9" value="5">
+                        <span id="gValue">5</span>
+                    </div>
+                    <div class="slider">
+                        <label>B</label>
+                        <input type="range" id="colorB" min="0" max="9" value="5">
+                        <span id="bValue">5</span>
                     </div>
                 </div>
-            </section>
+            </div>
+        </div>
 
-            <section class="cosmetics-panel">
-                <div class="panel-header">
-                    <h2>Customization</h2>
-                    <div class="search-box">
-                        <input type="text" placeholder="Search cosmetics..." id="cosmeticSearch">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                        </svg>
-                    </div>
-                </div>
-                <div class="cosmetics-container" id="cosmetics-container">
-                    <!-- Categories will be inserted here by JavaScript -->
-                </div>
-            </section>
-        </main>
-    </div>
+        <!-- Right Panel - Customization -->
+        <div class="customization-panel">
+            <div class="tab-header">
+                <button class="tab-button active" data-tab="outfits">Outfits</button>
+                <button class="tab-button" data-tab="body">Body</button>
+                <button class="tab-button" data-tab="animations">Animations</button>
+            </div>
 
-    <!-- Cosmetic Selection Modal -->
-    <div id="cosmeticModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Select Items</h2>
-                <div class="modal-controls">
-                    <select id="cosmeticCategoryFilter">
+            <div class="tab-content active" id="outfits">
+                <div class="category-selector">
+                    <select id="cosmeticCategory">
                         <option value="all">All Categories</option>
                         <option value="hats">Hats</option>
                         <option value="shirts">Shirts</option>
-                        <option value="badges">Badges</option>
-                        <option value="arms">Arms</option>
-                        <option value="paws">Paws</option>
-                        <option value="faces">Faces</option>
                         <option value="pants">Pants</option>
-                        <option value="chests">Chests</option>
-                        <option value="backs">Backs</option>
-                        <option value="furs">Furs</option>
+                        <option value="accessories">Accessories</option>
                     </select>
-                    <span class="close-modal">&times;</span>
+                    <div class="search-box">
+                        <input type="text" placeholder="Search items...">
+                    </div>
+                </div>
+
+                <div class="items-grid" id="cosmeticGrid">
+                    <!-- Items will be loaded here via JS -->
                 </div>
             </div>
-            <div class="modal-body" id="cosmeticGrid">
-                <!-- Items will be inserted here -->
+
+            <div class="tab-content" id="body">
+                <!-- Body customization content -->
+            </div>
+
+            <div class="tab-content" id="animations">
+                <!-- Animation content -->
             </div>
         </div>
-    </div>
 
-    <!-- Variation Selection Modal -->
-    <div id="variationModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="variationModalTitle">Select Variation</h2>
-                <span class="close-modal">&times;</span>
-            </div>
-            <div class="modal-body variations-container" id="variationGrid">
-                <!-- Variations will be inserted here -->
-            </div>
+        <!-- Bottom Bar -->
+        <div class="action-bar">
+            <button class="btn-secondary">Reset</button>
+            <button class="btn-primary" id="saveCharacter">Save Avatar</button>
         </div>
     </div>
 
